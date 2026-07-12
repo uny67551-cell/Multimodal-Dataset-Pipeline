@@ -1,0 +1,15 @@
+__pycache__/
+
+*.pyc
+
+.vscode/
+
+.idea/
+
+.env* 
+# ignore files start with .env 
+
+outputs/
+
+.terminal-logs/ 
+# ignore files start with .terminal-logs
