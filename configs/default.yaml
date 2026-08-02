@@ -1,0 +1,18 @@
+paths:
+  raw_dir: datasets/raw
+  processed_dir: datasets/processed
+  output_dir: outputs
+
+ingestion:
+  supported_extensions:
+    - .jpg
+    - .jpeg
+    - .png
+    - .webp
+    - .bmp
+  recursive: true
+  mode: copy
+
+logging:
+  level: INFO
+  log_file: outputs/logs/ingestion.log

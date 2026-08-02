@@ -13,3 +13,7 @@ outputs/
 
 .terminal-logs/ 
 # ignore files start with .terminal-logs
+
+datasets/processed/
+
+tools/
