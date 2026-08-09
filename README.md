@@ -24,6 +24,13 @@ This project builds a reusable pipeline that turns raw media folders into traini
 - Generate caption / tags / objects
 - Export JSON inference report
 
+### Sprint 3 completed: Metadata Generation
+
+- Merge ingestion + inference reports by image id
+- Build unified MetadataRecord (caption / tags / objects / scene / file info)
+- Export JSON metadata report
+- CLI: `python main.py metadata`
+
 ## Installation
 
 ```bash
@@ -89,11 +96,26 @@ Notes:
 - Do not commit API keys. Use environment variable `QWEN_API_KEY`.
 - Truncated JPEGs may pass ingestion checks but fail during full vision decode.
 
+### 3) Metadata generation
+
+After ingestion and inference reports exist:
+
+```bash
+python main.py metadata
+```
+
+Optional:
+
+```bash
+python main.py metadata --ingestion-report outputs/ingestion_report.json --inference-report outputs/inference_report.json
+```
+
 ### Outputs
 
 - Processed images: `datasets/processed/{id}.{ext}`
 - Ingestion report: `outputs/ingestion_report.json`
 - Inference report: `outputs/inference_report.json`
+- Metadata report: `outputs/metadata_report.json`
 - Log file: path configured in YAML (default under `outputs/logs/`)
 
 ## Project Structure
@@ -111,6 +133,7 @@ Multimodal-Dataset-Pipeline/
 │   ├── core/                 # Config, logger, exceptions
 │   ├── ingestion/            # Scanner / Validator / Organizer / Reporter
 │   ├── inference/            # VLM backends + InferenceStage
+│   ├── metadata/             # Merge reports into unified metadata
 │   └── models/               # Shared data models
 ├── tests/                    # Unit and integration tests
 ├── tools/                    # Local helper scripts (gitignored)
@@ -130,12 +153,13 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 
 - [x] Image Ingestion
 - [x] VLM Inference
-- [ ] Metadata Generation
+- [x] Metadata Generation
 - [ ] Quality Control
 - [ ] Dataset Export
 - [ ] Web UI
 
 ## Architecture
 
-- Sprint 1 (Inference): [docs/S1_architecture.md](docs/S1_architecture.md)
+- Sprint 1 (Ingestion): [docs/S1_architecture.md](docs/S1_architecture.md)
 - Sprint 2 (Inference): [docs/S2_architecture.md](docs/S2_architecture.md)
+- Sprint 3 (Metadata): [docs/S3_architecture.md](docs/S3_architecture.md)

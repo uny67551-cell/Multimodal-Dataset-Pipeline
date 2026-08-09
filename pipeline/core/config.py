@@ -53,6 +53,11 @@ class PipelineConfig:
     def inference_report_path(self) -> Path:
         """Default path for the inference JSON report."""
         return self.output_dir / "inference_report.json"
+        
+    @property
+    def metadata_report_path(self) -> Path:
+        """Default path for the metadata JSON report."""
+        return self.output_dir / "metadata_report.json"
 
 def load_config(config_path: Path | None = None) -> PipelineConfig:
     """

@@ -7,6 +7,7 @@ from pipeline.core.logger import setup_logger
 from pipeline.ingestion.stage import IngestionStage
 from pipeline.inference.factory import create_backend
 from pipeline.inference.stage import InferenceStage
+from pipeline.metadata.stage import MetadataStage
 
 def build_parser() -> argparse.ArgumentParser:  
     """Build command-line argument parser."""
@@ -90,6 +91,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override backend: mock | local | api",
     )
     infer.add_argument("--log-level", default=None)
+
+    # -------- metadata --------
+    metadata = subparsers.add_parser(
+        "metadata",
+        help="Merge ingestion and inference reports into metadata",
+    )
+    metadata.add_argument(
+        "--config",
+        "-c",
+        type=Path,
+        default=Path("configs/default.yaml"),
+    )
+    metadata.add_argument(
+        "--ingestion-report",
+        type=Path,
+        default=None,
+        help="Ingestion report JSON (default: outputs/ingestion_report.json)",
+    )
+    metadata.add_argument(
+        "--inference-report",
+        type=Path,
+        default=None,
+        help="Inference report JSON (default: outputs/inference_report.json)",
+    )
+    metadata.add_argument("--log-level", default=None)
+
     return parser # return the root parser object
 
 def run_ingest(args: argparse.Namespace) -> None:
@@ -132,6 +159,20 @@ def run_infer(args: argparse.Namespace) -> None:
     if config.logging.log_file is not None:
         print(f"Log file: {config.logging.log_file}")
 
+def run_metadata(args: argparse.Namespace) -> None:
+    """Load config, setup logging, and run metadata merge."""
+    config = load_config(args.config)
+    log_level = args.log_level or config.logging.level
+    setup_logger(level=log_level, log_file=config.logging.log_file)
+    stage = MetadataStage(config)
+    records = stage.run(
+        ingestion_report_path=args.ingestion_report,
+        inference_report_path=args.inference_report,
+    )
+    print(f"Done. Generated {len(records)} metadata records.")
+    print(f"Report: {config.metadata_report_path}")
+    if config.logging.log_file is not None:
+        print(f"Log file: {config.logging.log_file}")
 
 def main() -> None:
     """CLI main entry."""
@@ -142,6 +183,8 @@ def main() -> None:
         run_ingest(args)
     elif args.command == "infer":
         run_infer(args)
+    elif args.command == "metadata":
+        run_metadata(args)
     else:
         parser.error(f"Unknown command: {args.command}")
 

@@ -8,3 +8,6 @@ class IngestionError(PipelineError): #IngestionError is a subclass of PipelineEr
 
 class InferenceError(PipelineError):
     """Raised when VLM inference setup or execution fails."""
+
+class MetadataError(PipelineError):
+    """Raised when metadata merge/export setup fails."""
