@@ -5,6 +5,8 @@ from pathlib import Path
 from pipeline.core.config import load_config
 from pipeline.core.logger import setup_logger
 from pipeline.ingestion.stage import IngestionStage
+from pipeline.inference.factory import create_backend
+from pipeline.inference.stage import InferenceStage
 
 def build_parser() -> argparse.ArgumentParser:  
     """Build command-line argument parser."""
@@ -13,6 +15,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     # subparsers is a dictionary of subparsers; command is the key; ingest is the value. Only subparsers can be used as different command-modes.
     subparsers = parser.add_subparsers(dest="command", required=True) # command is a mode-tag; required=True means user must specify a subparser
+    
+    # -------- ingest --------
     ingest = subparsers.add_parser(
         "ingest",                                   # name of container in command
         help="Run image ingestion pipeline",
@@ -53,6 +57,39 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Override log level, e.g. DEBUG / INFO",
     )
+
+    # -------- infer --------
+    infer = subparsers.add_parser(
+        "infer",
+        help="Run VLM inference pipeline",
+    )
+    infer.add_argument(
+        "--config",
+        "-c",
+        type=Path,
+        default=Path("configs/default.yaml"),
+    )
+    infer.add_argument(
+        "--processed",
+        "-p",
+        type=Path,
+        default=None,
+        help="Processed images directory (default: config.processed_dir)",
+    )
+    infer.add_argument(
+        "--report",
+        "-r",
+        type=Path,
+        default=None,
+        help="Ingestion report JSON (default: outputs/ingestion_report.json)",
+    )
+    infer.add_argument(
+        "--backend",
+        "-b",
+        default=None,
+        help="Override backend: mock | local | api",
+    )
+    infer.add_argument("--log-level", default=None)
     return parser # return the root parser object
 
 def run_ingest(args: argparse.Namespace) -> None:
@@ -76,12 +113,35 @@ def run_ingest(args: argparse.Namespace) -> None:
     if config.logging.log_file is not None:
         print(f"Log file: {config.logging.log_file}") # print the log file path
 
+def run_infer(args: argparse.Namespace) -> None:
+    """Load config, setup logging, and run inference."""
+    config = load_config(args.config)
+    if args.backend is not None:
+        config.inference.backend = args.backend
+    log_level = args.log_level or config.logging.level
+    setup_logger(level=log_level, log_file=config.logging.log_file)
+    backend = create_backend(config.inference)
+    stage = InferenceStage(config=config, backend=backend)
+    records = stage.run(
+        report_path=args.report,
+        processed_dir=args.processed,
+    )
+    print(f"Done. Inferred {len(records)} records.")
+    print(f"Backend: {backend.name}")
+    print(f"Report: {config.inference_report_path}")
+    if config.logging.log_file is not None:
+        print(f"Log file: {config.logging.log_file}")
+
+
 def main() -> None:
     """CLI main entry."""
     parser = build_parser() # build the parser object
     args = parser.parse_args() # parse the arguments and return a Namespace object
+    
     if args.command == "ingest":
         run_ingest(args)
+    elif args.command == "infer":
+        run_infer(args)
     else:
         parser.error(f"Unknown command: {args.command}")
 

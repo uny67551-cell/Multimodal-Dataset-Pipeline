@@ -5,3 +5,6 @@ class PipelineError(Exception): #Exception is a built-in class in Python that re
 
 class IngestionError(PipelineError): #IngestionError is a subclass of PipelineError.
     """Raised when ingestion setup fails, e.g. input directory not found."""
+
+class InferenceError(PipelineError):
+    """Raised when VLM inference setup or execution fails."""

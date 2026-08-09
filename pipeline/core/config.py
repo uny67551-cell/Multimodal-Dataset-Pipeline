@@ -15,6 +15,18 @@ class IngestionConfig:
     mode: str = "copy"
 
 @dataclass
+class InferenceConfig:
+    """Settings for the VLM inference stage."""
+    backend: str = "mock"  # mock | local | api
+    model_name: str = "Qwen/Qwen2.5-VL-3B-Instruct"
+    load_in_4bit: bool = True
+    max_new_tokens: int = 128
+    max_pixels: int = 352800  # roughly 640x552, keeps VRAM lower
+    api_base: str = ""
+    api_key_env: str = "QWEN_API_KEY"
+    api_timeout: int = 120   
+
+@dataclass
 class LoggingConfig:
     """Logging settings."""
     level: str = "INFO"
@@ -27,13 +39,20 @@ class PipelineConfig:
     processed_dir: Path = Path("datasets/processed")
     output_dir: Path = Path("outputs")
     ingestion: IngestionConfig = field(default_factory=IngestionConfig) # (field(default_factory=class_name))
+    inference: InferenceConfig = field(default_factory=InferenceConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
+
     @property
     def ingestion_report_path(self) -> Path:
         """Default path for the ingestion JSON report."""
         return self.output_dir / "ingestion_report.json"
 
         # ↑↑↑ default values are used if no config file is provided
+
+    @property
+    def inference_report_path(self) -> Path:
+        """Default path for the inference JSON report."""
+        return self.output_dir / "inference_report.json"
 
 def load_config(config_path: Path | None = None) -> PipelineConfig:
     """
@@ -53,7 +72,9 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
                                                           # or {} is a default value if value is not None or False
     paths = data.get("paths", {}) # get the paths from the dictionary,if not found, use default values {}
     ingestion_data = data.get("ingestion", {})
+    inference_data = data.get("inference", {})
     logging_data = data.get("logging", {})
+
     extensions = ingestion_data.get(
         "supported_extensions",
         list(DEFAULT_SUPPORTED_EXTENSIONS),
@@ -65,6 +86,20 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         supported_extensions=tuple(extensions),
         recursive=ingestion_data.get("recursive", True), # if not found, use default value True
         mode=ingestion_data.get("mode", "copy"),
+    )
+
+    inference = InferenceConfig(
+        backend=inference_data.get("backend", "mock"),
+        model_name=inference_data.get(
+            "model_name",
+            "Qwen/Qwen2.5-VL-3B-Instruct",
+        ),
+        load_in_4bit=inference_data.get("load_in_4bit", True),
+        max_new_tokens=inference_data.get("max_new_tokens", 128),
+        max_pixels=inference_data.get("max_pixels", 352800),
+        api_base=inference_data.get("api_base", ""),
+        api_key_env=inference_data.get("api_key_env", "QWEN_API_KEY"),
+        api_timeout=inference_data.get("api_timeout", 120),
     )
 
     # ↓↓↓ create LoggingConfig object with the data from the dictionary
@@ -82,6 +117,7 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         processed_dir=Path(paths.get("processed_dir", "datasets/processed")),
         output_dir=Path(paths.get("output_dir", "outputs")),
         ingestion=ingestion,
+        inference=inference,
         logging=logging_config,
     )
 

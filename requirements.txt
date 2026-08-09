@@ -11,3 +11,11 @@ loguru
 pyyaml
 
 pytest
+
+bitsandbytes
+
+accelerate
+
+qwen-vl-utils
+
+requests

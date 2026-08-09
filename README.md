@@ -10,15 +10,19 @@ This project builds a reusable pipeline that turns raw media folders into traini
 
 ## Current Status
 
-Sprint 1 completed: **Image Ingestion**
+### Sprint 1 completed: Image Ingestion
 
 - Scan image directories
 - Validate readable images
 - Organize files with stable IDs
 - Export JSON ingestion report
-- CLI entry point with logging
 
+### Sprint 2 completed: VLM Inference
 
+- Pluggable backends: `mock` / `local` / `api`
+- Collect targets from ingestion report or `datasets/processed`
+- Generate caption / tags / objects
+- Export JSON inference report
 
 ## Installation
 
@@ -26,13 +30,16 @@ Sprint 1 completed: **Image Ingestion**
 pip install -r requirements.txt
 ```
 
+For local Qwen inference you may also need a HuggingFace mirror on some networks:
 
+```powershell
+$env:HF_ENDPOINT="https://hf-mirror.com"
+$env:HF_HUB_DISABLE_XET="1"
+```
 
 ## Usage
 
-
-
-### Run image ingestion
+### 1) Image ingestion
 
 ```bash
 python main.py ingest -i datasets/sample -o datasets/processed
@@ -46,15 +53,48 @@ python main.py ingest -c configs/default.yaml -i datasets/sample
 python main.py ingest -i datasets/sample --move
 ```
 
+### 2) VLM inference
 
+Default backend is `mock` (no GPU / no API key):
+
+```bash
+python main.py infer
+```
+
+Use DashScope API:
+
+```powershell
+$env:QWEN_API_KEY="your_key"
+python main.py infer --backend api
+```
+
+Set API model name in `configs/default.yaml` (example: `qwen-vl-plus`) and keep:
+
+```yaml
+api_base: https://dashscope.aliyuncs.com/compatible-mode/v1
+```
+
+Use local Qwen2.5-VL (needs GPU / downloaded weights; may be slow on 4GB VRAM):
+
+```powershell
+$env:HF_ENDPOINT="https://hf-mirror.com"
+$env:HF_HUB_DISABLE_XET="1"
+python main.py infer --backend local
+```
+
+Notes:
+
+- API `model_name` example: `qwen-vl-plus`
+- Local `model_name` example: `Qwen/Qwen2.5-VL-3B-Instruct`
+- Do not commit API keys. Use environment variable `QWEN_API_KEY`.
+- Truncated JPEGs may pass ingestion checks but fail during full vision decode.
 
 ### Outputs
 
 - Processed images: `datasets/processed/{id}.{ext}`
-- Report: `outputs/ingestion_report.json`
-- Log file: `outputs/logs/ingestion.log`
-
-
+- Ingestion report: `outputs/ingestion_report.json`
+- Inference report: `outputs/inference_report.json`
+- Log file: path configured in YAML (default under `outputs/logs/`)
 
 ## Project Structure
 
@@ -68,35 +108,34 @@ Multimodal-Dataset-Pipeline/
 ├── docs/                     # Architecture notes
 ├── outputs/                  # Reports and logs
 ├── pipeline/
-│   ├── core/                 # Config, logger, base stage, exceptions
+│   ├── core/                 # Config, logger, exceptions
 │   ├── ingestion/            # Scanner / Validator / Organizer / Reporter
+│   ├── inference/            # VLM backends + InferenceStage
 │   └── models/               # Shared data models
 ├── tests/                    # Unit and integration tests
-├── tools/                    # Helper scripts
+├── tools/                    # Local helper scripts (gitignored)
 ├── main.py                   # CLI entry point
 └── requirements.txt
 ```
 
-
-
 ## Testing
 
 ```bash
-python -m pytest tests/ingestion/ -v
+python -m pytest tests/ -v
 ```
 
+Tests use temporary directories and the mock backend. They do not call paid APIs or require a GPU.
 
 ## Roadmap
 
 - [x] Image Ingestion
-- [ ] VLM Inference
+- [x] VLM Inference
 - [ ] Metadata Generation
 - [ ] Quality Control
 - [ ] Dataset Export
 - [ ] Web UI
 
-
-
 ## Architecture
 
-See [docs/architecture.md](docs/architecture.md) for module dependency and data-flow diagrams.
+- Sprint 1 (Inference): [docs/S1_architecture.md](docs/S1_architecture.md)
+- Sprint 2 (Inference): [docs/S2_architecture.md](docs/S2_architecture.md)
