@@ -32,6 +32,11 @@ inference:
 #   Writes:
 #     outputs/metadata_report.json
 
+qc:
+  blur_threshold: 100.0
+  # Laplacian variance below this => is_blurry
+  # Writes: outputs/qc_report.json
+  
 logging:
   level: INFO
   log_file: outputs/logs/ingestion.log

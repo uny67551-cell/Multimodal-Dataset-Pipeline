@@ -8,6 +8,7 @@ from pipeline.ingestion.stage import IngestionStage
 from pipeline.inference.factory import create_backend
 from pipeline.inference.stage import InferenceStage
 from pipeline.metadata.stage import MetadataStage
+from pipeline.qc.stage import QCStage
 
 def build_parser() -> argparse.ArgumentParser:  
     """Build command-line argument parser."""
@@ -117,6 +118,38 @@ def build_parser() -> argparse.ArgumentParser:
     )
     metadata.add_argument("--log-level", default=None)
 
+    # -------- qc --------
+    qc = subparsers.add_parser(
+        "qc",
+        help="Run image quality-control pipeline",
+    )
+    qc.add_argument(
+        "--config",
+        "-c",
+        type=Path,
+        default=Path("configs/default.yaml"),
+    )
+    qc.add_argument(
+        "--metadata-report",
+        type=Path,
+        default=None,
+        help="Metadata report JSON (default: outputs/metadata_report.json)",
+    )
+    qc.add_argument(
+        "--processed",
+        "-p",
+        type=Path,
+        default=None,
+        help="Processed images directory (default: config.processed_dir)",
+    )
+    qc.add_argument(
+        "--blur-threshold",
+        type=float,
+        default=None,
+        help="Override blur Laplacian threshold (default: config.qc.blur_threshold)",
+    )
+    qc.add_argument("--log-level", default=None)
+
     return parser # return the root parser object
 
 def run_ingest(args: argparse.Namespace) -> None:
@@ -174,6 +207,33 @@ def run_metadata(args: argparse.Namespace) -> None:
     if config.logging.log_file is not None:
         print(f"Log file: {config.logging.log_file}")
 
+def run_qc(args: argparse.Namespace) -> None:
+    """Load config, setup logging, and run quality control."""
+    config = load_config(args.config)
+
+    if args.blur_threshold is not None:
+        config.qc.blur_threshold = args.blur_threshold
+
+    log_level = args.log_level or config.logging.level
+    setup_logger(level=log_level, log_file=config.logging.log_file)
+
+    stage = QCStage(config)
+    records = stage.run(
+        metadata_report_path=args.metadata_report,
+        processed_dir=args.processed,
+    )
+
+    pass_n = sum(1 for r in records if r.quality_status == "pass")
+    warn_n = sum(1 for r in records if r.quality_status == "warn")
+    reject_n = sum(1 for r in records if r.quality_status == "reject")
+
+    print(f"Done. Checked {len(records)} images.")
+    print(f"pass={pass_n} warn={warn_n} reject={reject_n}")
+    print(f"blur_threshold={config.qc.blur_threshold}")
+    print(f"Report: {config.qc_report_path}")
+    if config.logging.log_file is not None:
+        print(f"Log file: {config.logging.log_file}")
+
 def main() -> None:
     """CLI main entry."""
     parser = build_parser() # build the parser object
@@ -185,6 +245,8 @@ def main() -> None:
         run_infer(args)
     elif args.command == "metadata":
         run_metadata(args)
+    elif args.command == "qc":
+        run_qc(args)
     else:
         parser.error(f"Unknown command: {args.command}")
 

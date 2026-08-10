@@ -11,3 +11,6 @@ class InferenceError(PipelineError):
 
 class MetadataError(PipelineError):
     """Raised when metadata merge/export setup fails."""
+
+class QCError(PipelineError):
+    """Raised when quality-control setup fails."""

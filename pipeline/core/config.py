@@ -27,6 +27,11 @@ class InferenceConfig:
     api_timeout: int = 120   
 
 @dataclass
+class QCConfig:
+    """Settings for the quality-control stage."""
+    blur_threshold: float = 100.0
+
+@dataclass
 class LoggingConfig:
     """Logging settings."""
     level: str = "INFO"
@@ -40,6 +45,7 @@ class PipelineConfig:
     output_dir: Path = Path("outputs")
     ingestion: IngestionConfig = field(default_factory=IngestionConfig) # (field(default_factory=class_name))
     inference: InferenceConfig = field(default_factory=InferenceConfig)
+    qc: QCConfig = field(default_factory=QCConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
 
     @property
@@ -58,6 +64,11 @@ class PipelineConfig:
     def metadata_report_path(self) -> Path:
         """Default path for the metadata JSON report."""
         return self.output_dir / "metadata_report.json"
+
+    @property
+    def qc_report_path(self) -> Path:
+        """Default path for the quality-control JSON report."""
+        return self.output_dir / "qc_report.json"
 
 def load_config(config_path: Path | None = None) -> PipelineConfig:
     """
@@ -78,6 +89,7 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
     paths = data.get("paths", {}) # get the paths from the dictionary,if not found, use default values {}
     ingestion_data = data.get("ingestion", {})
     inference_data = data.get("inference", {})
+    qc_data = data.get("qc", {})
     logging_data = data.get("logging", {})
 
     extensions = ingestion_data.get(
@@ -107,6 +119,10 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         api_timeout=inference_data.get("api_timeout", 120),
     )
 
+    qc = QCConfig(
+        blur_threshold=float(qc_data.get("blur_threshold", 100.0)),
+    )
+
     # ↓↓↓ create LoggingConfig object with the data from the dictionary
 
     log_file = logging_data.get("log_file")
@@ -123,6 +139,7 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         output_dir=Path(paths.get("output_dir", "outputs")),
         ingestion=ingestion,
         inference=inference,
+        qc=qc,
         logging=logging_config,
     )
 

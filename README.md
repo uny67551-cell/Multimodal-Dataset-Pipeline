@@ -17,6 +17,8 @@ This project builds a reusable pipeline that turns raw media folders into traini
 - Organize files with stable IDs
 - Export JSON ingestion report
 
+
+
 ### Sprint 2 completed: VLM Inference
 
 - Pluggable backends: `mock` / `local` / `api`
@@ -24,12 +26,26 @@ This project builds a reusable pipeline that turns raw media folders into traini
 - Generate caption / tags / objects
 - Export JSON inference report
 
+
+
 ### Sprint 3 completed: Metadata Generation
 
 - Merge ingestion + inference reports by image id
 - Build unified MetadataRecord (caption / tags / objects / scene / file info)
 - Export JSON metadata report
 - CLI: `python main.py metadata`
+
+
+
+### Sprint 4 completed: Quality Control
+
+- Collect QC targets from metadata report or `datasets/processed`
+- Detect corrupt / blurry / duplicate images
+- Score `pass` / `warn` / `reject` (mark only, no delete by default)
+- Export JSON QC report
+- CLI: `python main.py qc`
+
+
 
 ## Installation
 
@@ -44,7 +60,11 @@ $env:HF_ENDPOINT="https://hf-mirror.com"
 $env:HF_HUB_DISABLE_XET="1"
 ```
 
+
+
 ## Usage
+
+
 
 ### 1) Image ingestion
 
@@ -59,6 +79,8 @@ python main.py ingest -i datasets/sample -o datasets/processed --log-level DEBUG
 python main.py ingest -c configs/default.yaml -i datasets/sample
 python main.py ingest -i datasets/sample --move
 ```
+
+
 
 ### 2) VLM inference
 
@@ -96,6 +118,8 @@ Notes:
 - Do not commit API keys. Use environment variable `QWEN_API_KEY`.
 - Truncated JPEGs may pass ingestion checks but fail during full vision decode.
 
+
+
 ### 3) Metadata generation
 
 After ingestion and inference reports exist:
@@ -110,13 +134,35 @@ Optional:
 python main.py metadata --ingestion-report outputs/ingestion_report.json --inference-report outputs/inference_report.json
 ```
 
+
+
+### 4) Quality control
+
+After metadata exists (or processed images are available):
+
+```bash
+python main.py qc
+```
+
+Optional:
+
+```bash
+python main.py qc --blur-threshold 50
+python main.py qc --processed datasets/processed --metadata-report outputs/metadata_report.json
+```
+
+Tune `qc.blur_threshold` in `configs/default.yaml` (CLI overrides YAML).
+
 ### Outputs
 
 - Processed images: `datasets/processed/{id}.{ext}`
 - Ingestion report: `outputs/ingestion_report.json`
 - Inference report: `outputs/inference_report.json`
 - Metadata report: `outputs/metadata_report.json`
+- QC report: `outputs/qc_report.json`
 - Log file: path configured in YAML (default under `outputs/logs/`)
+
+
 
 ## Project Structure
 
@@ -134,12 +180,15 @@ Multimodal-Dataset-Pipeline/
 │   ├── ingestion/            # Scanner / Validator / Organizer / Reporter
 │   ├── inference/            # VLM backends + InferenceStage
 │   ├── metadata/             # Merge reports into unified metadata
+│   ├── qc/                   # Corrupt / blur / duplicate / QCStage
 │   └── models/               # Shared data models
 ├── tests/                    # Unit and integration tests
 ├── tools/                    # Local helper scripts (gitignored)
 ├── main.py                   # CLI entry point
 └── requirements.txt
 ```
+
+
 
 ## Testing
 
@@ -154,12 +203,16 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - [x] Image Ingestion
 - [x] VLM Inference
 - [x] Metadata Generation
-- [ ] Quality Control
+- [x] Quality Control
 - [ ] Dataset Export
 - [ ] Web UI
+
+
 
 ## Architecture
 
 - Sprint 1 (Ingestion): [docs/S1_architecture.md](docs/S1_architecture.md)
 - Sprint 2 (Inference): [docs/S2_architecture.md](docs/S2_architecture.md)
 - Sprint 3 (Metadata): [docs/S3_architecture.md](docs/S3_architecture.md)
+- Sprint 4 (QC): [docs/S4_architecture.md](docs/S4_architecture.md)
+
