@@ -14,3 +14,6 @@ class MetadataError(PipelineError):
 
 class QCError(PipelineError):
     """Raised when quality-control setup fails."""
+
+class ExportError(PipelineError):
+    """Raised when dataset export setup fails."""

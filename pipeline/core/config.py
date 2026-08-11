@@ -32,6 +32,14 @@ class QCConfig:
     blur_threshold: float = 100.0
 
 @dataclass
+class ExportConfig:
+    """Settings for the dataset export stage."""
+    export_dir: Path = Path("outputs/export")
+    exclude_duplicates: bool = True
+    include_blurry: bool = False
+    require_caption: bool = True
+
+@dataclass
 class LoggingConfig:
     """Logging settings."""
     level: str = "INFO"
@@ -46,6 +54,7 @@ class PipelineConfig:
     ingestion: IngestionConfig = field(default_factory=IngestionConfig) # (field(default_factory=class_name))
     inference: InferenceConfig = field(default_factory=InferenceConfig)
     qc: QCConfig = field(default_factory=QCConfig)
+    export: ExportConfig = field(default_factory=ExportConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
 
     @property
@@ -70,6 +79,11 @@ class PipelineConfig:
         """Default path for the quality-control JSON report."""
         return self.output_dir / "qc_report.json"
 
+    @property
+    def export_dir(self) -> Path:
+        """Default export package directory."""
+        return self.export.export_dir
+
 def load_config(config_path: Path | None = None) -> PipelineConfig:
     """
     Load pipeline configuration from YAML.
@@ -90,6 +104,7 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
     ingestion_data = data.get("ingestion", {})
     inference_data = data.get("inference", {})
     qc_data = data.get("qc", {})
+    export_data = data.get("export", {})
     logging_data = data.get("logging", {})
 
     extensions = ingestion_data.get(
@@ -123,6 +138,13 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         blur_threshold=float(qc_data.get("blur_threshold", 100.0)),
     )
 
+    export = ExportConfig(
+        export_dir=Path(export_data.get("export_dir", "outputs/export")),
+        exclude_duplicates=bool(export_data.get("exclude_duplicates", True)),
+        include_blurry=bool(export_data.get("include_blurry", False)),
+        require_caption=bool(export_data.get("require_caption", True)),
+    )   
+
     # ↓↓↓ create LoggingConfig object with the data from the dictionary
 
     log_file = logging_data.get("log_file")
@@ -140,6 +162,7 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         ingestion=ingestion,
         inference=inference,
         qc=qc,
+        export=export,
         logging=logging_config,
     )
 

@@ -9,6 +9,8 @@ from pipeline.inference.factory import create_backend
 from pipeline.inference.stage import InferenceStage
 from pipeline.metadata.stage import MetadataStage
 from pipeline.qc.stage import QCStage
+from pipeline.export.stage import ExportStage
+from pipeline.export.filter import iter_included
 
 def build_parser() -> argparse.ArgumentParser:  
     """Build command-line argument parser."""
@@ -149,6 +151,55 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override blur Laplacian threshold (default: config.qc.blur_threshold)",
     )
     qc.add_argument("--log-level", default=None)
+    
+    # -------- export --------
+    export = subparsers.add_parser(
+        "export",
+        help="Export a self-contained training dataset package",
+    )
+    export.add_argument(
+        "--config",
+        "-c",
+        type=Path,
+        default=Path("configs/default.yaml"),
+    )
+    export.add_argument(
+        "--metadata-report",
+        type=Path,
+        default=None,
+        help="Metadata report JSON (default: outputs/metadata_report.json)",
+    )
+    export.add_argument(
+        "--qc-report",
+        type=Path,
+        default=None,
+        help="QC report JSON (default: outputs/qc_report.json)",
+    )
+    export.add_argument(
+        "--export-dir",
+        type=Path,
+        default=None,
+        help="Export package directory (default: config.export.export_dir)",
+    )
+    export.add_argument(
+        "--include-blurry",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Include blurry images (default: config.export.include_blurry)",
+    )
+    export.add_argument(
+        "--exclude-duplicates",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Exclude duplicate images (default: config.export.exclude_duplicates)",
+    )
+    export.add_argument(
+        "--require-caption",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Require non-empty caption (default: config.export.require_caption)",
+    )
+    export.add_argument("--log-level", default=None)
 
     return parser # return the root parser object
 
@@ -234,6 +285,40 @@ def run_qc(args: argparse.Namespace) -> None:
     if config.logging.log_file is not None:
         print(f"Log file: {config.logging.log_file}")
 
+def run_export(args: argparse.Namespace) -> None:
+    """Load config, setup logging, and run dataset export."""
+    config = load_config(args.config)
+
+    if args.export_dir is not None:
+        config.export.export_dir = args.export_dir
+    if args.include_blurry is not None:
+        config.export.include_blurry = args.include_blurry
+    if args.exclude_duplicates is not None:
+        config.export.exclude_duplicates = args.exclude_duplicates
+    if args.require_caption is not None:
+        config.export.require_caption = args.require_caption
+
+    log_level = args.log_level or config.logging.level
+    setup_logger(level=log_level, log_file=config.logging.log_file)
+
+    stage = ExportStage(config)
+    records = stage.run(
+        metadata_report_path=args.metadata_report,
+        qc_report_path=args.qc_report,
+    )
+
+    included = iter_included(records)
+    print(f"Done. Candidates={len(records)} included={len(included)}")
+    print(f"exclude_duplicates={config.export.exclude_duplicates}")
+    print(f"include_blurry={config.export.include_blurry}")
+    print(f"require_caption={config.export.require_caption}")
+    print(f"Export dir: {stage.export_dir}")
+    print(f"Annotations: {stage.annotations_path}")
+    print(f"Report: {stage.report_path}")
+    print(f"LLaVA: {stage.llava_path}")
+    if config.logging.log_file is not None:
+        print(f"Log file: {config.logging.log_file}")
+
 def main() -> None:
     """CLI main entry."""
     parser = build_parser() # build the parser object
@@ -247,8 +332,11 @@ def main() -> None:
         run_metadata(args)
     elif args.command == "qc":
         run_qc(args)
+    elif args.command == "export":
+        run_export(args)
     else:
         parser.error(f"Unknown command: {args.command}")
+
 
 if __name__ == "__main__":
     main()

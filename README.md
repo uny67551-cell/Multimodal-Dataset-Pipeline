@@ -45,7 +45,13 @@ This project builds a reusable pipeline that turns raw media folders into traini
 - Export JSON QC report
 - CLI: `python main.py qc`
 
+### Sprint 5 completed: Dataset Export
 
+- Join metadata + QC into export candidates
+- Filter duplicates / blur / missing caption (configurable)
+- Copy included images into a self-contained package
+- Write `annotations.jsonl` + `llava.jsonl` + `export_report.json`
+- CLI: `python main.py export`
 
 ## Installation
 
@@ -153,6 +159,29 @@ python main.py qc --processed datasets/processed --metadata-report outputs/metad
 
 Tune `qc.blur_threshold` in `configs/default.yaml` (CLI overrides YAML).
 
+### 5) Dataset export
+
+After metadata and QC reports exist:
+
+```bash
+python main.py export
+```
+
+Optional:
+
+```bash
+python main.py export --include-blurry
+python main.py export --no-require-caption
+python main.py export --export-dir outputs/export_demo
+```
+
+Default policy (overridable via YAML / CLI):
+
+- exclude duplicates
+- exclude blurry images
+- require non-empty caption
+- always copy included images into the export package
+
 ### Outputs
 
 - Processed images: `datasets/processed/{id}.{ext}`
@@ -160,9 +189,8 @@ Tune `qc.blur_threshold` in `configs/default.yaml` (CLI overrides YAML).
 - Inference report: `outputs/inference_report.json`
 - Metadata report: `outputs/metadata_report.json`
 - QC report: `outputs/qc_report.json`
+- Export package: `outputs/export/` (`images/`, `annotations.jsonl`, `llava.jsonl`, `export_report.json`)
 - Log file: path configured in YAML (default under `outputs/logs/`)
-
-
 
 ## Project Structure
 
@@ -174,21 +202,20 @@ Multimodal-Dataset-Pipeline/
 │   ├── processed/            # Normalized images
 │   └── sample/               # Small local test images
 ├── docs/                     # Architecture notes
-├── outputs/                  # Reports and logs
+├── outputs/                  # Reports, logs, and export packages
 ├── pipeline/
 │   ├── core/                 # Config, logger, exceptions
 │   ├── ingestion/            # Scanner / Validator / Organizer / Reporter
 │   ├── inference/            # VLM backends + InferenceStage
 │   ├── metadata/             # Merge reports into unified metadata
 │   ├── qc/                   # Corrupt / blur / duplicate / QCStage
+│   ├── export/               # Filter / writers / ExportStage
 │   └── models/               # Shared data models
 ├── tests/                    # Unit and integration tests
 ├── tools/                    # Local helper scripts (gitignored)
 ├── main.py                   # CLI entry point
 └── requirements.txt
 ```
-
-
 
 ## Testing
 
@@ -204,10 +231,8 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - [x] VLM Inference
 - [x] Metadata Generation
 - [x] Quality Control
-- [ ] Dataset Export
+- [x] Dataset Export
 - [ ] Web UI
-
-
 
 ## Architecture
 
@@ -215,4 +240,5 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - Sprint 2 (Inference): [docs/S2_architecture.md](docs/S2_architecture.md)
 - Sprint 3 (Metadata): [docs/S3_architecture.md](docs/S3_architecture.md)
 - Sprint 4 (QC): [docs/S4_architecture.md](docs/S4_architecture.md)
+- Sprint 5 (Export): [docs/S5_architecture.md](docs/S5_architecture.md)
 

@@ -36,6 +36,16 @@ qc:
   blur_threshold: 100.0
   # Laplacian variance below this => is_blurry
   # Writes: outputs/qc_report.json
+
+export:
+  export_dir: outputs/export
+  exclude_duplicates: true
+  include_blurry: false
+  require_caption: true
+  # Always copies included images into export_dir/images/
+  # Writes:
+  #   outputs/export/annotations.jsonl
+  #   outputs/export/export_report.json
   
 logging:
   level: INFO
