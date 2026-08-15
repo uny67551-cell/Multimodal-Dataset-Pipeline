@@ -53,6 +53,13 @@ This project builds a reusable pipeline that turns raw media folders into traini
 - Write `annotations.jsonl` + `llava.jsonl` + `export_report.json`
 - CLI: `python main.py export`
 
+### Sprint 6 completed: Web API + Vue console
+
+- FastAPI over existing stages (reports, images, upload, pipeline POST)
+- Vue 3 pages: Pipeline / Dashboard / Gallery
+- Upload images or `.zip` into `datasets/raw`, then run ingest → export in the browser
+- Infer defaults to `mock` (optional `api` / `local`)
+
 ## Installation
 
 ```bash
@@ -182,6 +189,36 @@ Default policy (overridable via YAML / CLI):
 - require non-empty caption
 - always copy included images into the export package
 
+### 6) Web UI
+
+Requires Node.js (LTS) plus the Python dependencies (including `fastapi` and `uvicorn`).
+
+Terminal 1 — API (repo root):
+
+```bash
+uvicorn api.app:app --reload --port 8000
+```
+
+Interactive docs: http://127.0.0.1:8000/docs
+
+Terminal 2 — Vue:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL (usually http://localhost:5173). Optional `frontend/.env`:
+
+```text
+VITE_API_BASE=http://127.0.0.1:8000
+```
+
+In the Pipeline tab: **Choose files** (images or `.zip`) → run stages 1–5 in order. Keep infer on `mock` unless `QWEN_API_KEY` is set.
+
+CLI commands above still work; the UI calls the same stages over HTTP.
+
 ### Outputs
 
 - Processed images: `datasets/processed/{id}.{ext}`
@@ -201,6 +238,8 @@ Multimodal-Dataset-Pipeline/
 │   ├── raw/                  # Original input images
 │   ├── processed/            # Normalized images
 │   └── sample/               # Small local test images
+├── api/                      # FastAPI (reports / images / uploads / pipeline)
+├── frontend/                 # Vue 3 + Vite console
 ├── docs/                     # Architecture notes
 ├── outputs/                  # Reports, logs, and export packages
 ├── pipeline/
@@ -232,7 +271,8 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - [x] Metadata Generation
 - [x] Quality Control
 - [x] Dataset Export
-- [ ] Web UI
+- [x] Web UI (API + Vue MVP)
+- [ ] Frontend polish (drag-and-drop, Export page)
 
 ## Architecture
 
@@ -241,4 +281,5 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - Sprint 3 (Metadata): [docs/S3_architecture.md](docs/S3_architecture.md)
 - Sprint 4 (QC): [docs/S4_architecture.md](docs/S4_architecture.md)
 - Sprint 5 (Export): [docs/S5_architecture.md](docs/S5_architecture.md)
+- Sprint 6 (Web UI): [docs/S6_architecture.md](docs/S6_architecture.md)
 

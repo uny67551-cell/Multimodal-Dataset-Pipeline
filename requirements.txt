@@ -21,3 +21,9 @@ qwen-vl-utils
 requests
 
 opencv-python
+
+fastapi
+
+uvicorn
+
+python-multipart
