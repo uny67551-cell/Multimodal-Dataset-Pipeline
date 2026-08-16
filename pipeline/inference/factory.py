@@ -6,8 +6,17 @@ from pipeline.inference.base import VLMBackend
 from pipeline.inference.mock_vlm import MockVLM
 
 
-def create_backend(inference: InferenceConfig) -> VLMBackend:
-    """Create a VLM backend from inference config."""
+def create_backend(
+    inference: InferenceConfig,
+    *,
+    api_key: str | None = None,
+) -> VLMBackend:
+    """Create a VLM backend from inference config.
+
+    api_key is a per-call override for backend=api. It is never written
+    to YAML. Empty/None falls back to the environment variable named in
+    inference.api_key_env.
+    """
     name = inference.backend.strip().lower()
 
     if name == "mock":
@@ -21,7 +30,7 @@ def create_backend(inference: InferenceConfig) -> VLMBackend:
     if name == "api":
         from pipeline.inference.qwen_api import QwenAPIVLM
 
-        return QwenAPIVLM(inference)
+        return QwenAPIVLM(inference, api_key=api_key)
 
     raise InferenceError(
         f"Unknown inference backend: {inference.backend!r}. "

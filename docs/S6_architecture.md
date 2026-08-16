@@ -10,7 +10,8 @@ Business logic stays in `pipeline/*`. The API is a thin wrapper. The UI
 only calls HTTP endpoints.
 
 Sprint 6 does **not** include drag-and-drop polish, a dedicated Export
-page, auth, or SQL. Those are left for Sprint 7.
+page, auth, or SQL. Sprint 7 covers the frontend polish; see
+[S7_architecture.md](S7_architecture.md).
 
 ## Module Dependency Graph
 

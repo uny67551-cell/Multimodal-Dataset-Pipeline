@@ -92,7 +92,7 @@ flowchart LR
 |---------|--------------------|--------|
 | mock | n/a | nothing |
 | local | `Qwen/Qwen2.5-VL-3B-Instruct` | GPU + HF weights |
-| api | `qwen-vl-plus` | `QWEN_API_KEY` + `api_base` |
+| api | `qwen-vl-plus` | `VLM_API_KEY` + `api_base` |
 
 CLI overrides YAML for one-off runs, for example:
 

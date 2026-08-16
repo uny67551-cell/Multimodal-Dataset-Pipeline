@@ -3,9 +3,11 @@
 import json
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 from pipeline.core.config import PipelineConfig, InferenceConfig, LoggingConfig
+from pipeline.core.exceptions import InferenceError
 from pipeline.inference.factory import create_backend
 from pipeline.inference.mock_vlm import MockVLM
 from pipeline.inference.stage import InferenceStage
@@ -51,3 +53,19 @@ def test_inference_stage_with_mock(tmp_path: Path) -> None:
     assert data["pipeline"] == "inference"
     assert data["backend"] == "mock"
     assert data["summary"]["success"] == 1
+
+
+def test_api_backend_accepts_per_request_key(monkeypatch) -> None:
+    monkeypatch.delenv("VLM_API_KEY", raising=False)
+    config = InferenceConfig(
+        backend="api",
+        api_base="https://example.com/v1",
+        model_name="qwen-vl-plus",
+    )
+
+    with pytest.raises(InferenceError, match="No API key"):
+        create_backend(config)
+
+    backend = create_backend(config, api_key="  sk-from-form  ")
+    assert backend.name == "api"
+    assert backend.api_key == "sk-from-form"

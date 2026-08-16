@@ -60,6 +60,15 @@ This project builds a reusable pipeline that turns raw media folders into traini
 - Upload images or `.zip` into `datasets/raw`, then run ingest → export in the browser
 - Infer defaults to `mock` (optional `api` / `local`)
 
+### Sprint 7 completed: Frontend polish
+
+- App layout (bar, tabs, cards) instead of the Vite starter look
+- Drag-and-drop upload (images / `.zip`) plus Choose files
+- Infer backend select; when `api`, paste a **per-run** API key (not saved to YAML)
+- QC blur threshold and export filter checkboxes, with YAML defaults shown
+- Gallery refresh, QC color badges, click thumbnail for a larger image
+- Export tab reads the last `export_report.json` (summary / policy / paths)
+
 ## Installation
 
 ```bash
@@ -103,17 +112,18 @@ Default backend is `mock` (no GPU / no API key):
 python main.py infer
 ```
 
-Use DashScope API:
+Use a remote VLM API (OpenAI-compatible):
 
 ```powershell
-$env:QWEN_API_KEY="your_key"
+$env:VLM_API_KEY="your_key"
 python main.py infer --backend api
 ```
 
-Set API model name in `configs/default.yaml` (example: `qwen-vl-plus`) and keep:
+Set `model_name` and `api_base` in `configs/default.yaml` for your provider. Example (DashScope):
 
 ```yaml
 api_base: https://dashscope.aliyuncs.com/compatible-mode/v1
+model_name: qwen-vl-plus
 ```
 
 Use local Qwen2.5-VL (needs GPU / downloaded weights; may be slow on 4GB VRAM):
@@ -128,7 +138,7 @@ Notes:
 
 - API `model_name` example: `qwen-vl-plus`
 - Local `model_name` example: `Qwen/Qwen2.5-VL-3B-Instruct`
-- Do not commit API keys. Use environment variable `QWEN_API_KEY`.
+- Do not commit API keys. Use environment variable `VLM_API_KEY`, or paste a per-run key in the web form.
 - Truncated JPEGs may pass ingestion checks but fail during full vision decode.
 
 
@@ -215,7 +225,11 @@ Open the Vite URL (usually http://localhost:5173). Optional `frontend/.env`:
 VITE_API_BASE=http://127.0.0.1:8000
 ```
 
-In the Pipeline tab: **Choose files** (images or `.zip`) → run stages 1–5 in order. Keep infer on `mock` unless `QWEN_API_KEY` is set.
+In the Pipeline tab: drop or **Choose files** (images or `.zip`) → set infer / QC / export options → run stages 1–5 in order.
+
+Keep infer on **mock** unless you want a remote VLM. For `api`, paste **your** key in the password field for that run (it is not written to YAML). Point `api_base` / `model_name` at a **vision** model. CLI infer can still use `VLM_API_KEY`.
+
+The Export tab shows the last package report; Gallery opens a larger image on click.
 
 CLI commands above still work; the UI calls the same stages over HTTP.
 
@@ -272,7 +286,7 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - [x] Quality Control
 - [x] Dataset Export
 - [x] Web UI (API + Vue MVP)
-- [ ] Frontend polish (drag-and-drop, Export page)
+- [x] Frontend polish (drag-and-drop, Export page)
 
 ## Architecture
 
@@ -282,4 +296,5 @@ Tests use temporary directories and the mock backend. They do not call paid APIs
 - Sprint 4 (QC): [docs/S4_architecture.md](docs/S4_architecture.md)
 - Sprint 5 (Export): [docs/S5_architecture.md](docs/S5_architecture.md)
 - Sprint 6 (Web UI): [docs/S6_architecture.md](docs/S6_architecture.md)
+- Sprint 7 (Frontend polish): [docs/S7_architecture.md](docs/S7_architecture.md)
 

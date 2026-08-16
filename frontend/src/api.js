@@ -1,10 +1,25 @@
-const API = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000"; //set the API base URL to the value of the VITE_API_BASE environment variable, or to http://127.0.0.1:8000 if the environment variable is not set
+const API = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000"; // API base URL
+
+function formatError(status, text) {
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed.detail === "string") {
+      return parsed.detail;
+    }
+    if (parsed.detail) {
+      return JSON.stringify(parsed.detail);
+    }
+  } catch {
+    // keep raw text
+  }
+  return text || `HTTP ${status}`;
+}
 
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, options);
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`${res.status} ${text}`);
+    throw new Error(formatError(res.status, text));
   }
   const contentType = res.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
@@ -19,6 +34,14 @@ export function getHealth() {
 
 export function getReports() {
   return request("/api/reports");
+}
+
+export function getReport(stage, includeRecords = false) {
+  return request(`/api/reports/${stage}?include_records=${includeRecords}`);
+}
+
+export function getPipelineDefaults() {
+  return request("/api/pipeline/defaults");
 }
 
 export function getGallery() {

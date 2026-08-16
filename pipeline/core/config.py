@@ -23,7 +23,7 @@ class InferenceConfig:
     max_new_tokens: int = 128
     max_pixels: int = 352800  # roughly 640x552, keeps VRAM lower
     api_base: str = ""
-    api_key_env: str = "QWEN_API_KEY"
+    api_key_env: str = "VLM_API_KEY"
     api_timeout: int = 120   
 
 @dataclass
@@ -130,7 +130,7 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         max_new_tokens=inference_data.get("max_new_tokens", 128),
         max_pixels=inference_data.get("max_pixels", 352800),
         api_base=inference_data.get("api_base", ""),
-        api_key_env=inference_data.get("api_key_env", "QWEN_API_KEY"),
+        api_key_env=inference_data.get("api_key_env", "VLM_API_KEY"),
         api_timeout=inference_data.get("api_timeout", 120),
     )
 

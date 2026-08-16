@@ -4,30 +4,56 @@ import { getReports } from "../api";
 
 const reports = ref([]);
 const error = ref("");
+const loading = ref(false);
 
-onMounted(async () => {
+async function load() {
+  loading.value = true;
+  error.value = "";
   try {
     const data = await getReports();
-    reports.value = data.reports;
-  } catch (e) {
-    error.value = String(e);
+    reports.value = data.reports || [];
+  } catch (err) {
+    error.value = String(err);
+  } finally {
+    loading.value = false;
   }
-});
+}
+
+onMounted(load);
 </script>
 
 <template>
   <section>
-    <h2>Reports</h2>
+    <div class="head">
+      <h2>Reports</h2>
+      <button :disabled="loading" @click="load">Refresh</button>
+    </div>
+    <p class="hint">Summaries from JSON files under <code>outputs/</code>.</p>
     <p v-if="error">{{ error }}</p>
-    <div v-for="item in reports" :key="item.stage" class="card">
-      <h3>{{ item.stage }}</h3>
-      <p>{{ item.available ? "available" : "missing" }}</p>
+    <div v-for="item in reports" :key="item.stage" class="card block">
+      <div class="head">
+        <h3>{{ item.stage }}</h3>
+        <span :class="item.available ? 'badge badge-pass' : 'badge badge-muted'">
+          {{ item.available ? "available" : "missing" }}
+        </span>
+      </div>
+      <p v-if="item.path" class="hint">{{ item.path }}</p>
       <pre v-if="item.summary">{{ JSON.stringify(item.summary, null, 2) }}</pre>
+      <p v-else-if="item.available" class="hint">No summary field in this report.</p>
     </div>
   </section>
 </template>
 
 <style scoped>
-.card { border: 1px solid #ccc; padding: 12px; margin-bottom: 12px; }
-pre { background: #f6f6f6; padding: 8px; overflow: auto; }
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.block {
+  margin-bottom: 12px;
+}
 </style>
