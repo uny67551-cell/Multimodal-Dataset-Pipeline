@@ -1,9 +1,9 @@
 """ Custom exceptions for the pipeline."""
 
-class PipelineError(Exception): #Exception is a built-in class in Python that represents an error.
+class PipelineError(Exception):
     """base exception for the pipeline errors."""
 
-class IngestionError(PipelineError): #IngestionError is a subclass of PipelineError.
+class IngestionError(PipelineError):
     """Raised when ingestion setup fails, e.g. input directory not found."""
 
 class InferenceError(PipelineError):

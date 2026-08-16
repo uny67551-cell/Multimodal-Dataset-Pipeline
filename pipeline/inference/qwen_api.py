@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import base64  # transform data into base64 format so that it can be sent over the network
-import mimetypes  # guess the MIME type of a file (jpg, png, ...)
+import base64
+import mimetypes
 import os
 from pathlib import Path
 
-import requests  # send HTTP requests
+import requests
 from loguru import logger
 
 from pipeline.core.config import InferenceConfig
@@ -50,7 +50,7 @@ class QwenAPIVLM(VLMBackend):
     def _encode_image(self, image_path: Path) -> tuple[str, str]:
         mime, _ = mimetypes.guess_type(str(image_path))
         if mime is None:
-            mime = "image/jpeg"  # defensive fallback when the file has no suffix
+            mime = "image/jpeg"
         data = base64.b64encode(image_path.read_bytes()).decode("utf-8")
         return mime, data
 
@@ -71,9 +71,9 @@ class QwenAPIVLM(VLMBackend):
         try:
             mime, b64 = self._encode_image(image_path)
             prompt = build_structured_prompt()
-            url = self.config.api_base.rstrip("/") + "/chat/completions"  # rstrip: remove trailing slash
+            url = self.config.api_base.rstrip("/") + "/chat/completions"
 
-            payload = {  # json format
+            payload = {
                 "model": self.config.model_name,
                 "messages": [
                     {
@@ -100,11 +100,11 @@ class QwenAPIVLM(VLMBackend):
                 url,
                 headers=headers,
                 json=payload,
-                timeout=self.config.api_timeout,  # wait until timeout then cancel
+                timeout=self.config.api_timeout,
             )
 
             if not response.ok:
-                # Include response body to debug 404/401 model or auth issues.
+
                 detail = response.text[:500]
                 raise RuntimeError(
                     f"{response.status_code} {response.reason} for url: {url}. "

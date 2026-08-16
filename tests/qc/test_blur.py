@@ -12,7 +12,7 @@ def test_solid_color_is_blurrier_than_checkerboard(tmp_path: Path) -> None:
     solid = tmp_path / "solid.jpg"
     Image.new("RGB", (64, 64), color=(128, 128, 128)).save(solid, format="JPEG")
 
-    # High-contrast checkerboard -> higher Laplacian variance
+
     arr = np.zeros((64, 64, 3), dtype=np.uint8)
     arr[0:32, 0:32] = 255
     arr[32:64, 32:64] = 255

@@ -31,17 +31,17 @@ def collect_from_report(report_path: Path) -> list[InferenceTarget]:
     with report_path.open("r", encoding="utf-8") as file:
         data = json.load(file)
 
-    records = data.get("records", []) # if not exists, return an empty list
+    records = data.get("records", [])
     targets: list[InferenceTarget] = []
 
     for record in records:
         processed = record.get("processed_path")
         image_id = record.get("id")
 
-        if not processed or not image_id or image_id == "unknown": # invalid
-            continue # next record
+        if not processed or not image_id or image_id == "unknown":
+            continue
 
-        image_path = Path(processed)  # Defensive check if the path exists，such as the file was deleted manually
+        image_path = Path(processed)
         if not image_path.exists():
             logger.warning("Skip missing processed image: {}", image_path)
             continue
@@ -113,12 +113,12 @@ def collect_inference_targets(
         )
         return targets
 
-    if processed_dir is None:  # defensive
+    if processed_dir is None:
         raise InferenceError(
             "No ingestion report found and no processed_dir provided."
         )
 
-    targets = collect_from_directory(processed_dir) # defensive
+    targets = collect_from_directory(processed_dir)
     logger.info(
         "Collected {} inference targets from directory {}",
         len(targets),

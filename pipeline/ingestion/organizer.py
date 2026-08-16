@@ -1,8 +1,8 @@
 """Organize images into subdirectories based on the file extension."""
 
-import shutil # shutil is a module that provides a function to copy files
+import shutil
 from pathlib import Path
-from loguru import logger # logger is an instance of class, this design for unified name as a agolable variable
+from loguru import logger
 from typing import Literal
 from pipeline.models.image_record import ImageRecord
 
@@ -26,13 +26,13 @@ def organize_image(
     """
 
     output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True) # mkdir is a method that creates a directory. Check！
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     if record.status != "valid":
-        logger.debug(f"Skipping invalid image: {record.source_path}") # debug is a method that logs a message
-        return record                                               # debug needs config to show in console
-    
-    destination = output_dir / f"{record.id}{record.extension}" # / is a path separator
+        logger.debug(f"Skipping invalid image: {record.source_path}")
+        return record
+
+    destination = output_dir / f"{record.id}{record.extension}"
 
     if destination.exists():
         record.processed_path = destination
@@ -46,7 +46,7 @@ def organize_image(
     elif mode == "move":
         shutil.move(record.source_path, destination)
     else:
-        raise ValueError(f"Invalid mode: {mode}") # because of Literal
+        raise ValueError(f"Invalid mode: {mode}")
 
     record.processed_path = destination
     record.status = "valid"
@@ -61,4 +61,3 @@ def organize_batch(
 ) -> list[ImageRecord]:
     """Organize multiple ImageRecord objects."""
     return [organize_image(record, output_dir, mode=mode) for record in records]
-                                                

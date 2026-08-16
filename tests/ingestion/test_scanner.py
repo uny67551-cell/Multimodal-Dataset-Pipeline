@@ -9,10 +9,10 @@ EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
 
 def test_scan_finds_images(sample_dir: Path) -> None:
     paths = scan_directory(sample_dir, EXTENSIONS, recursive=True)
-    names = {path.name for path in paths} 
+    names = {path.name for path in paths}
 
-    assert "valid.jpg" in names # assert is a keyword in Python that is used to test a condition.
-    assert "photo.png" in names # true or false
+    assert "valid.jpg" in names
+    assert "photo.png" in names
     assert "notes.txt" not in names
 
 def test_scan_ignores_empty_extension_mismatch(sample_dir: Path) -> None:
@@ -28,7 +28,7 @@ def test_scan_non_recursive(sample_dir: Path) -> None:
     assert "valid.jpg" in names
     assert "photo.png" not in names
 
-def test_scan_missing_directory(tmp_path: Path) -> None: # temporary path form pytest
+def test_scan_missing_directory(tmp_path: Path) -> None:
     missing = tmp_path / "does_not_exist"
-    with pytest.raises(IngestionError):  # test tool of raised error
-        scan_directory(missing, EXTENSIONS) # end with if IngestionError received 
+    with pytest.raises(IngestionError):
+        scan_directory(missing, EXTENSIONS)

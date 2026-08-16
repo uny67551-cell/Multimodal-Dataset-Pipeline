@@ -106,7 +106,6 @@ function restoreCache() {
       requireCaption.value = data.requireCaption;
     }
   } catch {
-    // ignore broken session cache
   }
 }
 

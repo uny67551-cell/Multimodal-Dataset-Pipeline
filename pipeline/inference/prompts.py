@@ -1,6 +1,6 @@
 """Prompt templates for VLM inference."""
 
-# constants for single-image inference
+
 CAPTION_PROMPT = (
     "Describe this image in one clear English sentence. "
     "Focus on the main subject, scene, and notable details."

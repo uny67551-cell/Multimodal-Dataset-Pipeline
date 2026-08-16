@@ -23,7 +23,7 @@ StageName = Literal["ingest", "infer", "metadata", "qc", "export"]
 
 class InferOptions(BaseModel):
     backend: Literal["mock", "local", "api"] = Field(
-        default="mock",  # default value is mock, it will be shown in the UI as the default value
+        default="mock",
         description="VLM backend. Use mock for tests; api calls an OpenAI-compatible endpoint.",
     )
     api_key: SecretStr | None = Field(
@@ -74,9 +74,9 @@ class ExportOptions(BaseModel):
     )
 
 
-def _copy_config():  # copy the config to avoid mutating the original config
+def _copy_config():
     """Do not mutate the cached config singleton."""
-    return replace(get_config())  # return a copy of the config
+    return replace(get_config())
 
 
 def _request_api_key(options: InferOptions) -> str | None:
@@ -91,7 +91,7 @@ def _request_api_key(options: InferOptions) -> str | None:
 def list_stages() -> dict[str, Any]:
     return {
         "stages": [
-            {"name": "ingest", "method": "POST", "path": "/api/pipeline/ingest"},  # stage name, HTTP method, path
+            {"name": "ingest", "method": "POST", "path": "/api/pipeline/ingest"},
             {"name": "infer", "method": "POST", "path": "/api/pipeline/infer"},
             {"name": "metadata", "method": "POST", "path": "/api/pipeline/metadata"},
             {"name": "qc", "method": "POST", "path": "/api/pipeline/qc"},

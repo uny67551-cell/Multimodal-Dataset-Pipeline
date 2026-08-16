@@ -32,7 +32,7 @@ def build_qc_record(
     checked_at = QCRecord.utc_now()
     image_path = Path(image_path)
 
-    is_corrupt, corrupt_error = is_corrupt_image(image_path) # False, None
+    is_corrupt, corrupt_error = is_corrupt_image(image_path)
     is_blurry = False
     blur_score: float | None = None
     error_message = corrupt_error
@@ -44,11 +44,11 @@ def build_qc_record(
                 threshold=blur_threshold,
             )
         except Exception as exc:
-            # Treat unexpected blur failures as corrupt/reject-level issues.
+
             is_corrupt = True
             error_message = f"Blur check failed: {exc}"
 
-    is_duplicate = duplicate_of is not None # True while it owns value, False while it is empty
+    is_duplicate = duplicate_of is not None
     quality_status = decide_quality_status(
         is_corrupt=is_corrupt,
         is_blurry=is_blurry,

@@ -12,21 +12,21 @@ from pipeline.qc.stage import QCStage
 from pipeline.export.stage import ExportStage
 from pipeline.export.filter import iter_included
 
-def build_parser() -> argparse.ArgumentParser:  
+def build_parser() -> argparse.ArgumentParser:
     """Build command-line argument parser."""
-    parser = argparse.ArgumentParser(               # create a new parser object;interpreter
-        description="Multimodal Dataset Pipeline",  # display this when --help is called
+    parser = argparse.ArgumentParser(
+        description="Multimodal Dataset Pipeline",
     )
-    # subparsers is a dictionary of subparsers; command is the key; ingest is the value. Only subparsers can be used as different command-modes.
-    subparsers = parser.add_subparsers(dest="command", required=True) # command is a mode-tag; required=True means user must specify a subparser
-    
-    # -------- ingest --------
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+
     ingest = subparsers.add_parser(
-        "ingest",                                   # name of container in command
+        "ingest",
         help="Run image ingestion pipeline",
     )
     ingest.add_argument(
-        "--input", # user can input by --input or -i
+        "--input",
         "-i",
         type=Path,
         default=None,
@@ -48,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ingest.add_argument(
         "--move",
-        action="store_true", # default is False
+        action="store_true",
         help="Move files instead of copying",
     )
     ingest.add_argument(
@@ -62,7 +62,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override log level, e.g. DEBUG / INFO",
     )
 
-    # -------- infer --------
+
     infer = subparsers.add_parser(
         "infer",
         help="Run VLM inference pipeline",
@@ -95,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     infer.add_argument("--log-level", default=None)
 
-    # -------- metadata --------
+
     metadata = subparsers.add_parser(
         "metadata",
         help="Merge ingestion and inference reports into metadata",
@@ -120,7 +120,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     metadata.add_argument("--log-level", default=None)
 
-    # -------- qc --------
+
     qc = subparsers.add_parser(
         "qc",
         help="Run image quality-control pipeline",
@@ -151,8 +151,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override blur Laplacian threshold (default: config.qc.blur_threshold)",
     )
     qc.add_argument("--log-level", default=None)
-    
-    # -------- export --------
+
+
     export = subparsers.add_parser(
         "export",
         help="Export a self-contained training dataset package",
@@ -201,28 +201,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     export.add_argument("--log-level", default=None)
 
-    return parser # return the root parser object
+    return parser
 
 def run_ingest(args: argparse.Namespace) -> None:
     """Load config, setup logging, and run ingestion."""
     config = load_config(args.config)
 
-    # ↓↓↓ try to override config if value received
 
     if args.output is not None:
-        config.processed_dir = args.output # override the processed directory
+        config.processed_dir = args.output
     if args.move:
         config.ingestion.mode = "move"
     if args.no_recursive:
         config.ingestion.recursive = False
     log_level = args.log_level or config.logging.level
-    setup_logger(level=log_level, log_file=config.logging.log_file) # level to logger
-    stage = IngestionStage(config) # logger to stage
+    setup_logger(level=log_level, log_file=config.logging.log_file)
+    stage = IngestionStage(config)
     records = stage.run(input_dir=args.input)
-    print(f"Done. Processed {len(records)} records.") # print the number of records
-    print(f"Report: {config.ingestion_report_path}") # ingestion_report_path is a def created by @property
+    print(f"Done. Processed {len(records)} records.")
+    print(f"Report: {config.ingestion_report_path}")
     if config.logging.log_file is not None:
-        print(f"Log file: {config.logging.log_file}") # print the log file path
+        print(f"Log file: {config.logging.log_file}")
 
 def run_infer(args: argparse.Namespace) -> None:
     """Load config, setup logging, and run inference."""
@@ -321,9 +320,9 @@ def run_export(args: argparse.Namespace) -> None:
 
 def main() -> None:
     """CLI main entry."""
-    parser = build_parser() # build the parser object
-    args = parser.parse_args() # parse the arguments and return a Namespace object
-    
+    parser = build_parser()
+    args = parser.parse_args()
+
     if args.command == "ingest":
         run_ingest(args)
     elif args.command == "infer":

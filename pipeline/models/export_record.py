@@ -21,20 +21,20 @@ class ExportRecord:
     status: ExportStatus
     generated_at: datetime
 
-    # Source image (before copy into export package)
+
     source_image_path: Path | None = None
 
-    # Path written into annotation files (relative inside export package)
+
     export_image_relpath: str | None = None
 
-    # From metadata
+
     caption: str | None = None
     tags: list[str] = field(default_factory=list)
     objects: list[str] = field(default_factory=list)
     scene: str | None = None
     metadata_status: str | None = None
 
-    # From QC
+
     quality_status: str | None = None
     is_corrupt: bool = False
     is_blurry: bool = False
@@ -42,7 +42,7 @@ class ExportRecord:
     duplicate_of: str | None = None
     blur_score: float | None = None
 
-    # Why excluded (if status == excluded)
+
     exclude_reason: str | None = None
 
     @staticmethod

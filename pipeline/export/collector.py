@@ -69,7 +69,7 @@ def collect_export_candidates(
         extension = row.get("extension") or (
             source_path.suffix if source_path is not None else ".jpg"
         )
-        # Planned relative path inside the export package (copy happens later).
+
         export_rel = f"images/{image_id}{extension}"
 
         records.append(

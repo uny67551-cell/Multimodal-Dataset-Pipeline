@@ -11,7 +11,7 @@ from pipeline.core.config import DEFAULT_SUPPORTED_EXTENSIONS
 
 router = APIRouter(prefix="/api/uploads", tags=["uploads"])
 
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB per file, 50*1024*1024 = 50MB
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 ZIP_EXTENSIONS = {".zip"}
 
 
@@ -48,9 +48,9 @@ def _extract_zip(zip_path: Path, dest_dir: Path) -> list[str]:
     extracted: list[str] = []
     with zipfile.ZipFile(zip_path) as archive:
         for info in archive.infolist():
-            if info.is_dir():  # skip directories
+            if info.is_dir():
                 continue
-            inner_name = Path(info.filename).name # .name is the basename of the file
+            inner_name = Path(info.filename).name
             if not _is_image_name(inner_name):
                 continue
             target = (dest_dir / inner_name).resolve()
@@ -61,16 +61,16 @@ def _extract_zip(zip_path: Path, dest_dir: Path) -> list[str]:
             with archive.open(info) as src, target.open("wb") as dst:
                 shutil.copyfileobj(src, dst)
             extracted.append(inner_name)
-    return extracted # return the list of image files that were extracted from the zip
+    return extracted
 
 
-@router.get("")  # list the available files in the raw directory
+@router.get("")
 def list_uploads() -> dict:
     """List files currently in datasets/raw."""
     raw_dir = _raw_dir()
     files: list[dict] = []
     for path in sorted(raw_dir.iterdir()):
-        if not path.is_file() or path.name.startswith("."): # skip directories and hidden files
+        if not path.is_file() or path.name.startswith("."):
             continue
         files.append(
             {
@@ -84,7 +84,7 @@ def list_uploads() -> dict:
 
 @router.post("")
 async def upload_files(
-    files: list[UploadFile] = File(..., description="Images and/or .zip"), # ... means required
+    files: list[UploadFile] = File(..., description="Images and/or .zip"),
 ) -> dict:
     """
     Save uploaded images into datasets/raw.
@@ -107,25 +107,25 @@ async def upload_files(
             continue
 
         if _is_zip_name(original):
-            tmp_zip = raw_dir / f".tmp_{original}" # create a temporary file in the raw directory
-            tmp_zip.write_bytes(data) # write the data to the temporary file
+            tmp_zip = raw_dir / f".tmp_{original}"
+            tmp_zip.write_bytes(data)
             try:
-                extracted = _extract_zip(tmp_zip, raw_dir) # extract the images from tmp_zip file to the raw directory
+                extracted = _extract_zip(tmp_zip, raw_dir)
                 from_zips.extend(extracted)
                 saved_images.extend(extracted)
             finally:
-                tmp_zip.unlink(missing_ok=True) # unlink means delete the file, missing_ok=True means don't raise an error if the file doesn't exist
+                tmp_zip.unlink(missing_ok=True)
             continue
 
         if not _is_image_name(original):
             skipped.append(original)
             continue
 
-        dest = raw_dir / original # zip file is not saved, only the images are saved
-        dest.write_bytes(data) # write the data to the destination file, save the image to the raw directory
-        saved_images.append(original) # add the image to the saved images list
+        dest = raw_dir / original
+        dest.write_bytes(data)
+        saved_images.append(original)
 
-    return {  # Return a status summary
+    return {
         "raw_dir": str(raw_dir),
         "saved": saved_images,
         "from_zips": from_zips,

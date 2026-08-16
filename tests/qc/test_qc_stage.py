@@ -24,7 +24,7 @@ def test_qc_stage_end_to_end(tmp_path: Path) -> None:
     empty = processed / "empty.jpg"
     empty.write_bytes(b"")
 
-    # Prefer scanning processed/ (no metadata report needed).
+
     config = PipelineConfig(
         processed_dir=processed,
         output_dir=output_dir,
@@ -32,15 +32,15 @@ def test_qc_stage_end_to_end(tmp_path: Path) -> None:
         logging=LoggingConfig(level="WARNING", log_file=None),
     )
     stage = QCStage(config)
-    records = stage.run() 
+    records = stage.run()
 
     by_id = {r.image_id: r for r in records}
 
-    # image_id 来自文件 stem
+
     assert by_id["empty"].quality_status == "reject"
     assert by_id["empty"].is_corrupt is True
 
-    # 两者有且仅有一个 is_duplicate
+
     assert by_id["good"].is_duplicate != by_id["dup"].is_duplicate
     if by_id["dup"].is_duplicate:
         assert by_id["dup"].duplicate_of == "good"
@@ -69,10 +69,10 @@ def test_qc_stage_uses_config_blur_threshold(tmp_path: Path) -> None:
     config = PipelineConfig(
         processed_dir=processed,
         output_dir=output_dir,
-        qc=QCConfig(blur_threshold=999999.0),  # force almost everything blurry
+        qc=QCConfig(blur_threshold=999999.0),
         logging=LoggingConfig(level="WARNING", log_file=None),
     )
-    stage = QCStage(config)  # do NOT pass blur_threshold=100
+    stage = QCStage(config)
     records = stage.run(metadata_report_path=tmp_path / "nope.json")
 
     assert stage.blur_threshold == 999999.0

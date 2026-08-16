@@ -24,7 +24,7 @@ def _serialize_record(record: ImageRecord) -> dict[str, Any]:
         "checksum": record.checksum,
         "status": record.status,
         "error_message": record.error_message,
-        "ingested_at": record.ingested_at.isoformat(), # isoformat() is a method that converts the datetime object to a string in ISO 8601 format
+        "ingested_at": record.ingested_at.isoformat(),
     }
 
 def build_summary(records: list[ImageRecord]) -> dict[str, int]:
@@ -52,11 +52,11 @@ def build_report(
         "records": [_serialize_record(record) for record in records],
     }
 
-def export_report(report: dict[str, Any], output_path: Path) -> Path: # creat ingestion_report
+def export_report(report: dict[str, Any], output_path: Path) -> Path:
     """Write the ingestion report to a JSON file."""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as file: # "open" can create a file if it doesn't exist
-        json.dump(report, file, indent=2, ensure_ascii=False) # dump is a method that writes the report to the file
+    with output_path.open("w", encoding="utf-8") as file:
+        json.dump(report, file, indent=2, ensure_ascii=False)
     logger.info("Ingestion report saved to {}", output_path)
     return output_path

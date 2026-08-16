@@ -17,14 +17,14 @@ class IngestionConfig:
 @dataclass
 class InferenceConfig:
     """Settings for the VLM inference stage."""
-    backend: str = "mock"  # mock | local | api
+    backend: str = "mock"
     model_name: str = "Qwen/Qwen2.5-VL-3B-Instruct"
     load_in_4bit: bool = True
     max_new_tokens: int = 128
-    max_pixels: int = 352800  # roughly 640x552, keeps VRAM lower
+    max_pixels: int = 352800
     api_base: str = ""
     api_key_env: str = "VLM_API_KEY"
-    api_timeout: int = 120   
+    api_timeout: int = 120
 
 @dataclass
 class QCConfig:
@@ -48,10 +48,10 @@ class LoggingConfig:
 @dataclass
 class PipelineConfig:
     """Top-level pipeline configuration."""
-    raw_dir: Path = Path("datasets/raw")  # default path 
+    raw_dir: Path = Path("datasets/raw")
     processed_dir: Path = Path("datasets/processed")
     output_dir: Path = Path("outputs")
-    ingestion: IngestionConfig = field(default_factory=IngestionConfig) # (field(default_factory=class_name))
+    ingestion: IngestionConfig = field(default_factory=IngestionConfig)
     inference: InferenceConfig = field(default_factory=InferenceConfig)
     qc: QCConfig = field(default_factory=QCConfig)
     export: ExportConfig = field(default_factory=ExportConfig)
@@ -62,13 +62,12 @@ class PipelineConfig:
         """Default path for the ingestion JSON report."""
         return self.output_dir / "ingestion_report.json"
 
-        # ↑↑↑ default values are used if no config file is provided
 
     @property
     def inference_report_path(self) -> Path:
         """Default path for the inference JSON report."""
         return self.output_dir / "inference_report.json"
-        
+
     @property
     def metadata_report_path(self) -> Path:
         """Default path for the metadata JSON report."""
@@ -90,17 +89,16 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
     Falls back to defaults when no config file is provided.
     """
     if config_path is None:
-        return PipelineConfig()  # no config file provided, use default values
+        return PipelineConfig()
     config_path = Path(config_path)
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    # load config file(yaml), parse it into a dictionary
 
     with config_path.open("r", encoding="utf-8") as file:
-        data: dict[str, Any] = yaml.safe_load(file) or {} # safe_load is a function that loads the yaml file into a dictionary
-                                                          # or {} is a default value if value is not None or False
-    paths = data.get("paths", {}) # get the paths from the dictionary,if not found, use default values {}
+        data: dict[str, Any] = yaml.safe_load(file) or {}
+
+    paths = data.get("paths", {})
     ingestion_data = data.get("ingestion", {})
     inference_data = data.get("inference", {})
     qc_data = data.get("qc", {})
@@ -112,11 +110,10 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         list(DEFAULT_SUPPORTED_EXTENSIONS),
     )
 
-    # ↓↓↓ create IngestionConfig object with the data from the dictionary
 
     ingestion = IngestionConfig(
         supported_extensions=tuple(extensions),
-        recursive=ingestion_data.get("recursive", True), # if not found, use default value True
+        recursive=ingestion_data.get("recursive", True),
         mode=ingestion_data.get("mode", "copy"),
     )
 
@@ -143,17 +140,15 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
         exclude_duplicates=bool(export_data.get("exclude_duplicates", True)),
         include_blurry=bool(export_data.get("include_blurry", False)),
         require_caption=bool(export_data.get("require_caption", True)),
-    )   
+    )
 
-    # ↓↓↓ create LoggingConfig object with the data from the dictionary
 
     log_file = logging_data.get("log_file")
     logging_config = LoggingConfig(
         level=logging_data.get("level", "INFO"),
-        log_file=Path(log_file) if log_file else None, # None means not saved to file
+        log_file=Path(log_file) if log_file else None,
     )
 
-    # ↓↓↓ create final PipelineConfig object with the data from the dictionary
 
     return PipelineConfig(
         raw_dir=Path(paths.get("raw_dir", "datasets/raw")),
@@ -168,16 +163,16 @@ def load_config(config_path: Path | None = None) -> PipelineConfig:
 
 """
 PipelineConfig(
-    raw_dir=Path('/mnt/data/raw_images'),           
-    processed_dir=Path('datasets/processed'),        
-    output_dir=Path('/mnt/data/results'),            
+    raw_dir=Path('/mnt/data/raw_images'),
+    processed_dir=Path('datasets/processed'),
+    output_dir=Path('/mnt/data/results'),
     ingestion=IngestionConfig(
-        supported_extensions=('.jpg', '.jpeg', '.png', '.webp', '.bmp'), 
-        mode='move'                                  
+        supported_extensions=('.jpg', '.jpeg', '.png', '.webp', '.bmp'),
+        mode='move'
     ),
     logging=LoggingConfig(
-        level='DEBUG',                               
-        log_file=Path('logs/my_app.log')             
+        level='DEBUG',
+        log_file=Path('logs/my_app.log')
     )
 )
 """

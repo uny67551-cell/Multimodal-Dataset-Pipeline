@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from loguru import logger
-from pipeline.core.config import PipelineConfig # default values
+from pipeline.core.config import PipelineConfig
 from pipeline.core.stage import PipelineStage
 from pipeline.ingestion.organizer import organize_batch
 from pipeline.ingestion.reporter import build_report, export_report
@@ -32,7 +32,7 @@ class IngestionStage(PipelineStage):
             supported_extensions=ingestion.supported_extensions,
             recursive=ingestion.recursive,
         )
-        logger.info("Found {} candidate images", len(paths)) # delayed formatting
+        logger.info("Found {} candidate images", len(paths))
         if not paths:
             logger.warning("No images found in {}", source_dir)
         records = validate_batch(paths, show_progress=True)
@@ -46,7 +46,7 @@ class IngestionStage(PipelineStage):
             input_dir=source_dir,
             output_dir=processed_dir,
         )
-        export_report(report, self.config.ingestion_report_path) #
+        export_report(report, self.config.ingestion_report_path)
         summary = report["summary"]
         logger.info(
             "Ingestion complete | valid: {} | invalid: {} | skipped: {}",

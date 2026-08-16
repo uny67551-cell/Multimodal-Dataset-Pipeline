@@ -20,7 +20,7 @@ def _record(
 ) -> ExportRecord:
     path = tmp_path / f"{image_id}.jpg"
     if not is_corrupt:
-        Image.new("RGB", (16, 16), color=(1, 2, 3)).save(path, format="JPEG") # create a 16x16 RGB image with color (1, 2, 3) and save it as JPEG
+        Image.new("RGB", (16, 16), color=(1, 2, 3)).save(path, format="JPEG")
     else:
         path.write_bytes(b"")
     return ExportRecord(

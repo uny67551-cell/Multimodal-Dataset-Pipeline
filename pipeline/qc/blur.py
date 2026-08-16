@@ -21,7 +21,7 @@ def compute_blur_score(image_path: Path) -> float:
     if image is None:
         raise QCError(f"Cannot decode image for blur score: {image_path}")
 
-    # Variance of Laplacian is a common sharpness metric.
+
     return float(cv2.Laplacian(image, cv2.CV_64F).var())
 
 
@@ -32,4 +32,4 @@ def is_blurry_image(image_path: Path, threshold: float = 100.0) -> tuple[bool, f
     Default threshold is a starting point; tune with your dataset.
     """
     score = compute_blur_score(image_path)
-    return score < threshold, score # boolean expression returns True if score is less than threshold, otherwise False
+    return score < threshold, score

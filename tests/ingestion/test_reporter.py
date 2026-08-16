@@ -36,7 +36,7 @@ def test_export_report_writes_json(sample_dir: Path, tmp_path: Path) -> None:
     )
     output_path = tmp_path / "outputs" / "ingestion_report.json"
     export_report(report, output_path)
-    
+
     assert output_path.exists()
     data = json.loads(output_path.read_text(encoding="utf-8"))
     assert data["pipeline"] == "ingestion"

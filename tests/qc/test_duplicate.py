@@ -12,7 +12,7 @@ def test_find_duplicates_marks_second_copy(tmp_path: Path) -> None:
     a = tmp_path / "a.jpg"
     b = tmp_path / "b.jpg"
     Image.new("RGB", (16, 16), color=(9, 9, 9)).save(a, format="JPEG")
-    b.write_bytes(a.read_bytes())  # exact duplicate bytes
+    b.write_bytes(a.read_bytes())
 
     c = tmp_path / "c.jpg"
     Image.new("RGB", (16, 16), color=(200, 0, 0)).save(c, format="JPEG")

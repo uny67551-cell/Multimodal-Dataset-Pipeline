@@ -17,7 +17,7 @@ def compute_checksum(path: Path) -> str:
     return sha256.hexdigest()
 
 
-def find_duplicates(targets: list[QCTarget]) -> dict[str, str]: # elements in list need to be QCTarget type
+def find_duplicates(targets: list[QCTarget]) -> dict[str, str]:
     """
     Find duplicate images among QC targets.
 
@@ -35,17 +35,17 @@ def find_duplicates(targets: list[QCTarget]) -> dict[str, str]: # elements in li
 
     for target in targets:
         checksum = target.checksum or compute_checksum(target.image_path)
-        if not checksum: # target.checksum is likely to be None if the image is corrupted
+        if not checksum:
             continue
 
         kept_id = checksum_to_kept.get(checksum)
         if kept_id is None:
-            checksum_to_kept[checksum] = target.image_id  # key: checksum, value: image_id
+            checksum_to_kept[checksum] = target.image_id
             continue
 
         if target.image_id == kept_id:
             continue
 
-        duplicate_map[target.image_id] = kept_id # key: image_id (new image id of duplicate), value: kept_id (duplicate image id = image_id in checksum_to_kept)
+        duplicate_map[target.image_id] = kept_id
 
     return duplicate_map

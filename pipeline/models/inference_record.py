@@ -18,10 +18,10 @@ class InferenceRecord:
     caption: str | None = None
     tags: list[str] = field(default_factory=list)
     objects: list[str] = field(default_factory=list)
-    backend: str = "mock"  # mock / local / api
+    backend: str = "mock"
     error_message: str | None = None
 
-    @staticmethod # no instance of the class is needed to call this method
+    @staticmethod
     def utc_now() -> datetime:
         """Return current UTC time."""
         return datetime.now(timezone.utc)

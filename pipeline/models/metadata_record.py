@@ -21,7 +21,7 @@ class MetadataRecord:
     status: MetadataStatus
     generated_at: datetime
 
-    # From ingestion
+
     original_filename: str | None = None
     source_path: Path | None = None
     processed_path: Path | None = None
@@ -34,7 +34,7 @@ class MetadataRecord:
     ingested_at: datetime | None = None
     ingestion_status: str | None = None
 
-    # From inference
+
     caption: str | None = None
     tags: list[str] = field(default_factory=list)
     objects: list[str] = field(default_factory=list)
@@ -43,7 +43,7 @@ class MetadataRecord:
     inferred_at: datetime | None = None
     inference_status: str | None = None
 
-    # Optional notes
+
     error_message: str | None = None
 
     @staticmethod

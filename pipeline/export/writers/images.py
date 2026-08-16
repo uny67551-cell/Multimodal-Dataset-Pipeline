@@ -27,7 +27,7 @@ def copy_export_images(
     copied = 0
     for record in iter_included(records):
         if record.source_image_path is None or record.export_image_relpath is None:
-            raise ExportError(f"Included record missing image paths: {record.id}") # end cycle
+            raise ExportError(f"Included record missing image paths: {record.id}")
 
         src = Path(record.source_image_path)
         dst = export_dir / record.export_image_relpath
@@ -36,7 +36,7 @@ def copy_export_images(
         if not src.exists():
             raise ExportError(f"Source image missing for {record.id}: {src}")
 
-        shutil.copy2(src, dst) # copy image to destination
+        shutil.copy2(src, dst)
         copied += 1
 
     logger.info("Copied {} images into {}", copied, images_root)

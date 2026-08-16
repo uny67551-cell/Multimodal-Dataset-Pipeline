@@ -8,15 +8,15 @@ from fastapi import APIRouter, HTTPException
 
 from api.deps import REPO_ROOT, get_config
 
-router = APIRouter(prefix="/api/reports", tags=["reports"]) # APIRouter -> creates a router for the reports API
-                                                            # Interface address for the reports API
+router = APIRouter(prefix="/api/reports", tags=["reports"])
+
 
 StageName = Literal["ingestion", "inference", "metadata", "qc", "export"]
 
 
-def _report_path_for(stage: StageName) -> Path: # pull the report path for a given stage
+def _report_path_for(stage: StageName) -> Path:
     config = get_config()
-    mapping: dict[str, Path] = { # mapping = {}
+    mapping: dict[str, Path] = {
         "ingestion": config.ingestion_report_path,
         "inference": config.inference_report_path,
         "metadata": config.metadata_report_path,
@@ -24,16 +24,16 @@ def _report_path_for(stage: StageName) -> Path: # pull the report path for a giv
         "export": Path(config.export.export_dir) / "export_report.json",
     }
     path = mapping[stage]
-    # Resolve relative paths against repo root (API may start from any cwd)
+
     if not path.is_absolute():
         path = REPO_ROOT / path
     return path
 
 
-def _load_report(stage: StageName) -> dict[str, Any]: # load the report for a given stage
+def _load_report(stage: StageName) -> dict[str, Any]:
     path = _report_path_for(stage)
     if not path.exists():
-        raise HTTPException( # raise an HTTP exception if the report is not found, similar to manual exceptions.py file
+        raise HTTPException(
             status_code=404,
             detail=f"Report not found for stage '{stage}': {path}",
         )
@@ -42,7 +42,7 @@ def _load_report(stage: StageName) -> dict[str, Any]: # load the report for a gi
 
 
 @router.get("")
-def list_report_summaries() -> dict[str, Any]: # list the report summaries for each stage, in order to check if the report is available or not
+def list_report_summaries() -> dict[str, Any]:
     """
     Return availability + summary for each known stage.
 
@@ -83,7 +83,7 @@ def list_report_summaries() -> dict[str, Any]: # list the report summaries for e
 
 
 @router.get("/{stage}")
-def get_report( # get the report for a specific given stage, can include the records or not
+def get_report(
     stage: StageName,
     include_records: bool = True,
 ) -> dict[str, Any]:
@@ -95,7 +95,7 @@ def get_report( # get the report for a specific given stage, can include the rec
     """
     data = _load_report(stage)
     if not include_records:
-        data = {k: v for k, v in data.items() if k != "records"} # return the data in .json file except for the records
+        data = {k: v for k, v in data.items() if k != "records"}
     return {
         "stage": stage,
         "path": str(_report_path_for(stage)),

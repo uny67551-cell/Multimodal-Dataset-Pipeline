@@ -28,7 +28,7 @@ class InferenceStage:
     ) -> list[InferenceRecord]:
         """
         Execute the inference pipeline.
-        
+
         Args:
             report_path: Optional ingestion report path.
             processed_dir: Optional processed images directory.

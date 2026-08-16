@@ -1,32 +1,32 @@
 """Validate image files and build ImageRecord objects."""
 
-import hashlib # hashlib is a module that provides a hash function
+import hashlib
 from pathlib import Path
 
-from loguru import logger # loguru is a module that provides a logger
-from PIL import Image # PIL is a module that can process images
-from tqdm import tqdm # progress bar 
+from loguru import logger
+from PIL import Image
+from tqdm import tqdm
 
-from pipeline.models.image_record import ImageRecord # format: from the first subfile of root directory to module script
+from pipeline.models.image_record import ImageRecord
 
-def compute_checksum(path: Path) -> str:  # fingerprinting algorithm
+def compute_checksum(path: Path) -> str:
     """Compute SHA256 checksum for a file."""
 
     sha256 = hashlib.sha256()
-    with path.open("rb") as file:  # read in binary mode "rb"
-        for chunk in iter(lambda: file.read(4096), b""):  # read in chunks of 4096 bytes，Form:iter(function, endvalue(binary""))
-            sha256.update(chunk)  # update or add the SHA256 checksum with the current chunk
-    return sha256.hexdigest()  # return the hexadecimal representation of the SHA256 checksum
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(4096), b""):
+            sha256.update(chunk)
+    return sha256.hexdigest()
 
 def generate_image_id(path: Path, file_size: int, checksum: str) -> str:
     """Generate a unique image ID."""
-    raw = f"{path.name}:{file_size}:{checksum}"  # create a raw string
-    return hashlib.sha256(raw.encode()).hexdigest()[:12] # encode raw into binary and return the first 12 characters
+    raw = f"{path.name}:{file_size}:{checksum}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:12]
 
 def validate_image(path: Path) -> ImageRecord:
     """
     Validate an image file and return an ImageRecord.
-    
+
     Never raise for normal file-level errors;
     invalid images are returned with status='invalid'.
     """
@@ -49,7 +49,7 @@ def validate_image(path: Path) -> ImageRecord:
             error_message="File not found",
         )
 
-    file_size = path.stat().st_size  # get st_size by stat() method
+    file_size = path.stat().st_size
     if file_size == 0:
         return ImageRecord(
             id="unknown",
@@ -66,15 +66,15 @@ def validate_image(path: Path) -> ImageRecord:
     try:
         checksum = compute_checksum(path)
 
-        with Image.open(path) as img:  # check if the image is valid
-            img.verify()  # verify() is a method form PIL to verify if the image is valid
-                          # File handle has been moved to the end, so getting size is not possible
+        with Image.open(path) as img:
+            img.verify()
+
         with Image.open(path) as img:
             width, height = img.size
             image_format = img.format
 
         if width <= 0 or height <= 0:
-            raise ValueError(f"Invalid dimensions: {width}x{height}") # sometime broken images have invalid dimensions
+            raise ValueError(f"Invalid dimensions: {width}x{height}")
 
         image_id = generate_image_id(path, file_size, checksum)
 
@@ -96,7 +96,7 @@ def validate_image(path: Path) -> ImageRecord:
         )
 
     except Exception as exc:
-        logger.warning("Validation failed for {}: {}", path, exc) # {} is a placeholder for the path and exc
+        logger.warning("Validation failed for {}: {}", path, exc)
         return ImageRecord(
             id="unknown",
             source_path=path,
@@ -115,5 +115,4 @@ def validate_batch(
 ) -> list[ImageRecord]:
     """Validate multiple images and return ImageRecord objects."""
     iterator = tqdm(paths, desc="Validating images") if show_progress else paths
-    return [validate_image(path) for path in iterator] # return list[validate_image(path) = ImageRecord]
-                                                       # [...] return a list
+    return [validate_image(path) for path in iterator]

@@ -14,7 +14,7 @@ class MockVLM(VLMBackend):
 
     def infer(self, image_path: Path, image_id: str) -> InferenceRecord:
         image_path = Path(image_path)
-        inferred_at = InferenceRecord.utc_now()  # static method
+        inferred_at = InferenceRecord.utc_now()
         if not image_path.exists():
             logger.warning("MockVLM: image not found: {}", image_path)
             return InferenceRecord(
@@ -25,7 +25,7 @@ class MockVLM(VLMBackend):
                 backend=self.name,
                 error_message="Image not found",
             )
-        stem = image_path.stem  # stem is the name of the image without the extension; property
+        stem = image_path.stem
         caption = f"A mock caption for image {stem}."
         tags = ["mock", "demo", stem[:8]]
         objects = ["object_a", "object_b"]

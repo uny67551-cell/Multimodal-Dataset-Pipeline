@@ -16,26 +16,19 @@ def sample_dir(tmp_path: Path) -> Path:
     root = tmp_path / "sample"
     root.mkdir()
 
-    # ↓↓↓ Create test files ↓↓↓
-
-    # valid jpg
     valid = root / "valid.jpg"
     Image.new("RGB", (64, 48), color=(255, 0, 0)).save(valid, format="JPEG")
 
-    # empty file
     empty = root / "empty.jpg"
-    empty.write_bytes(b"") # 0-byte file
+    empty.write_bytes(b"")
 
-    # non-image
-    (root / "notes.txt").write_text("not an image", encoding="utf-8") # non-image file
+    (root / "notes.txt").write_text("not an image", encoding="utf-8")
 
-    # nested image
-    nested = root / "sub" # nested image
+    nested = root / "sub"
     nested.mkdir()
     Image.new("RGB", (32, 32), color=(0, 255, 0)).save(
         nested / "photo.png",
         format="PNG",
     )
-
 
     return root

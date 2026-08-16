@@ -1,6 +1,6 @@
 """Merge ingestion and inference reports into MetadataRecord objects."""
 
-from __future__ import annotations 
+from __future__ import annotations
 
 import json
 from datetime import datetime
@@ -13,7 +13,7 @@ from pipeline.core.exceptions import MetadataError
 from pipeline.models.metadata_record import MetadataRecord, MetadataStatus
 
 
-def load_json_report(path: Path) -> dict[str, Any]: # 
+def load_json_report(path: Path) -> dict[str, Any]:
     """Load a JSON report file."""
     path = Path(path)
     if not path.exists():
@@ -32,12 +32,12 @@ def _parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value) # return!
+        return datetime.fromisoformat(value)
     except ValueError:
         return None
 
 
-def _derive_scene(tags: list[str], caption: str | None) -> str | None: 
+def _derive_scene(tags: list[str], caption: str | None) -> str | None:
     """
     Lightweight scene placeholder for Sprint 3.
 
@@ -63,7 +63,7 @@ def _decide_status(
     if inference_status in {"failed", "skipped"}:
         return "partial"
 
-    # No matching inference record
+
     return "ingestion_only"
 
 

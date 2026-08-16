@@ -48,7 +48,7 @@ def build_report(
         "summary": build_summary(records),
         "records": [_serialize_record(record) for record in records],
     }
-    
+
 def export_report(report: dict[str, Any], output_path: Path) -> Path:
     """Write the inference report to a JSON file."""
     output_path = Path(output_path)

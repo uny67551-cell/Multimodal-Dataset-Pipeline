@@ -29,7 +29,7 @@ class QwenLocalVLM(VLMBackend):
         try:
             import torch
             from transformers import AutoProcessor, BitsAndBytesConfig, Qwen2_5_VLForConditionalGeneration
-        except ImportError as exc: # ImportErorrr is a built-in class exception
+        except ImportError as exc:
             raise InferenceError(
                 "Local backend requires: torch, transformers, bitsandbytes, accelerate, qwen-vl-utils. "
                 f"Import error: {exc}"
@@ -39,7 +39,7 @@ class QwenLocalVLM(VLMBackend):
         logger.info("Loading local VLM: {} (4bit={})", model_name, self.config.load_in_4bit)
 
         try:
-            self._processor = AutoProcessor.from_pretrained(model_name) # if not exsit, download on Huggingface
+            self._processor = AutoProcessor.from_pretrained(model_name)
 
             if self.config.load_in_4bit:
                 quant_config = BitsAndBytesConfig(
@@ -56,14 +56,14 @@ class QwenLocalVLM(VLMBackend):
             else:
                 self._model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
                     model_name,
-                    torch_dtype=torch.float16, # higher precision for better performance
+                    torch_dtype=torch.float16,
                     device_map="auto",
                 )
 
             self._model.eval()
             logger.info("Local VLM loaded successfully")
 
-        except Exception as exc: # Exception is a built-in class exception
+        except Exception as exc:
             raise InferenceError(
                 f"Failed to load local model '{model_name}'. "
                 f"If this is a VRAM/OOM issue on 4GB GPU, switch to backend=api. "
@@ -75,7 +75,7 @@ class QwenLocalVLM(VLMBackend):
         inferred_at = InferenceRecord.utc_now()
 
         if not image_path.exists():
-            return InferenceRecord( # input values
+            return InferenceRecord(
                 image_id=image_id,
                 image_path=image_path,
                 status="failed",
@@ -87,15 +87,15 @@ class QwenLocalVLM(VLMBackend):
         try:
             from qwen_vl_utils import process_vision_info
 
-            prompt = build_structured_prompt() # build the prompt for the model, such as "Describe the image in detail"
-            messages = [ # format
+            prompt = build_structured_prompt()
+            messages = [
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "image",
                             "image": str(image_path.resolve()),
-                            # Limit pixels to reduce VRAM usage on 4GB GPUs.
+
                             "max_pixels": self.config.max_pixels,
                         },
                         {"type": "text", "text": prompt},
@@ -106,32 +106,32 @@ class QwenLocalVLM(VLMBackend):
             text = self._processor.apply_chat_template(
                 messages,
                 tokenize=False,
-                add_generation_prompt=True, # add the prompt "Answer in the following format: CAPTION: ... TAGS: a, b, c OBJECTS: x, y"
+                add_generation_prompt=True,
             )
 
-            image_inputs, video_inputs = process_vision_info(messages) # process the vision info, such as the image and video
-            inputs = self._processor( # type：BatchEncoding
-                text=[text], # transform text to list of strings
+            image_inputs, video_inputs = process_vision_info(messages)
+            inputs = self._processor(
+                text=[text],
                 images=image_inputs,
                 videos=video_inputs,
                 padding=True,
-                return_tensors="pt", # pytorch tensor
+                return_tensors="pt",
             )
-            inputs = inputs.to(self._model.device) # move the inputs to the device
+            inputs = inputs.to(self._model.device)
 
-            generated = self._model.generate(  # prompt and answer 
-                **inputs,  # key: value → key=value
+            generated = self._model.generate(
+                **inputs,
                 max_new_tokens=self.config.max_new_tokens,
             )
             trimmed = [
                 out_ids[len(in_ids) :]
-                for in_ids, out_ids in zip(inputs.input_ids, generated) # zip: combine inputs and generated, tuple: (input_ids, generated)
+                for in_ids, out_ids in zip(inputs.input_ids, generated)
             ]
             output_text = self._processor.batch_decode(
                 trimmed,
                 skip_special_tokens=True,
                 clean_up_tokenization_spaces=False,
-            )[0] # try test
+            )[0]
 
             caption, tags, objects = parse_structured_response(output_text)
             logger.info("Local VLM inferred: {}", image_path.name)

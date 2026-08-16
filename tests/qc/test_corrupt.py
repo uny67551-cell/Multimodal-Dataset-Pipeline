@@ -29,7 +29,7 @@ def test_truncated_jpeg_is_corrupt(tmp_path: Path) -> None:
     path = tmp_path / "broken.jpg"
     Image.new("RGB", (64, 64), color=(1, 2, 3)).save(path, format="JPEG")
     data = path.read_bytes()
-    path.write_bytes(data[: max(20, len(data) // 4)])  # keep header, cut body
+    path.write_bytes(data[: max(20, len(data) // 4)])
 
     is_corrupt, error = is_corrupt_image(path)
     assert is_corrupt is True

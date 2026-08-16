@@ -20,7 +20,7 @@ class MetadataStage:
     def report_path(self) -> Path:
         """Default path for the metadata JSON report."""
         return self.config.metadata_report_path
-        
+
     def run(
         self,
         ingestion_report_path: Path | None = None,

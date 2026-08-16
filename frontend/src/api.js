@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000"; // API base URL
+const API = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
 
 function formatError(status, text) {
   try {
@@ -10,7 +10,6 @@ function formatError(status, text) {
       return JSON.stringify(parsed.detail);
     }
   } catch {
-    // keep raw text
   }
   return text || `HTTP ${status}`;
 }

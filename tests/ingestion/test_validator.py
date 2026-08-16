@@ -21,7 +21,7 @@ def test_validate_empty_image(sample_dir: Path) -> None:
     assert record.error_message == "Empty file"
 
 def test_validate_missing_file(tmp_path: Path) -> None:
-    record = validate_image(tmp_path / "missing.jpg") # only path name was created
+    record = validate_image(tmp_path / "missing.jpg")
 
     assert record.status == "invalid"
     assert record.error_message == "File not found"
